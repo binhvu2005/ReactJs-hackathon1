@@ -1,5 +1,5 @@
 // import Swal from "sweetalert2";
-import { v1 as uuidv4 } from 'uuid';
+
 interface IFeedback {
     feedbackId: string;
     score: number
@@ -68,7 +68,7 @@ class Feedback implements IFeedback {
         const btnScoreGroup = document.querySelector(".btn-score-group") as HTMLElement;
     
         btnScoreGroup.addEventListener("click", (e) => {
-            const targetButton = (e.target as HTMLElement).closest(".btn-score");
+            const targetButton = (e.target as HTMLElement).closest(".btn-score") as HTMLElement;
             if (targetButton) {
                 const allButtons = btnScoreGroup.querySelectorAll(".btn-score");
                 allButtons.forEach((button) => button.classList.remove("active"));
@@ -166,16 +166,7 @@ class Feedback implements IFeedback {
     private handleSendButtonClick(): void {
         this.btnSend.addEventListener("click", (e) => {
 
-            Swal.fire({
-                title: "Are you sure?",
-                text: "",
-                icon: "question",
-                showCancelButton: true,
-                confirmButtonColor: "##03fc0b",
-                cancelButtonColor: "##fc0303",
-                confirmButtonText: "Yes"
-              }).then((result) => {
-                if (result.isConfirmed) {
+           
                     e.stopPropagation();
                     let feedback = this.feedbackInput.value; 
             
@@ -212,10 +203,7 @@ class Feedback implements IFeedback {
                     this.reviewNumber.innerHTML = this.listFeedback.length.toString();
             
                     this.btnSend.classList.remove("btn-dark");
-                }
-              });
-              
-           
+             
         });
     }
     
@@ -249,3 +237,10 @@ class Feedback implements IFeedback {
 }
 
 new Feedback();
+function uuidv4(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }

@@ -1,10 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 // import Swal from "sweetalert2";
-const uuid_1 = require("uuid");
 class Feedback {
     constructor() {
-        this.feedbackId = (0, uuid_1.v1)();
+        this.feedbackId = uuidv4();
         this.score = 0;
         this.content = "";
         this.scoreActive = 10;
@@ -115,45 +113,33 @@ class Feedback {
     }
     handleSendButtonClick() {
         this.btnSend.addEventListener("click", (e) => {
-            Swal.fire({
-                title: "Are you sure?",
-                text: "",
-                icon: "question",
-                showCancelButton: true,
-                confirmButtonColor: "##03fc0b",
-                cancelButtonColor: "##fc0303",
-                confirmButtonText: "Yes"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    e.stopPropagation();
-                    let feedback = this.feedbackInput.value;
-                    let updatingFeedback = null;
-                    if (updatingFeedback) {
-                        updatingFeedback.content = feedback;
-                        updatingFeedback.score = this.scoreActive;
-                        localStorage.setItem("feedbacks", JSON.stringify(this.listFeedback));
-                        this.feedbackInput.value = "";
-                        updatingFeedback = null;
-                        this.feedbackInput.focus();
-                        this.renderListFeedback();
-                        this.handleAverageRating();
-                    }
-                    else {
-                        let newFeedback = {
-                            feedbackId: (0, uuid_1.v1)(),
-                            score: this.scoreActive,
-                            content: feedback,
-                        };
-                        this.listFeedback.push(newFeedback);
-                        localStorage.setItem("feedbacks", JSON.stringify(this.listFeedback));
-                        this.renderListFeedback();
-                        this.handleAverageRating();
-                        this.feedbackInput.value = "";
-                    }
-                    this.reviewNumber.innerHTML = this.listFeedback.length.toString();
-                    this.btnSend.classList.remove("btn-dark");
-                }
-            });
+            e.stopPropagation();
+            let feedback = this.feedbackInput.value;
+            let updatingFeedback = null;
+            if (updatingFeedback) {
+                updatingFeedback.content = feedback;
+                updatingFeedback.score = this.scoreActive;
+                localStorage.setItem("feedbacks", JSON.stringify(this.listFeedback));
+                this.feedbackInput.value = "";
+                updatingFeedback = null;
+                this.feedbackInput.focus();
+                this.renderListFeedback();
+                this.handleAverageRating();
+            }
+            else {
+                let newFeedback = {
+                    feedbackId: uuidv4(),
+                    score: this.scoreActive,
+                    content: feedback,
+                };
+                this.listFeedback.push(newFeedback);
+                localStorage.setItem("feedbacks", JSON.stringify(this.listFeedback));
+                this.renderListFeedback();
+                this.handleAverageRating();
+                this.feedbackInput.value = "";
+            }
+            this.reviewNumber.innerHTML = this.listFeedback.length.toString();
+            this.btnSend.classList.remove("btn-dark");
         });
     }
     validateData() {
@@ -184,3 +170,10 @@ class Feedback {
     }
 }
 new Feedback();
+function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
