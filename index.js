@@ -1,18 +1,17 @@
 "use strict";
-// import Swal from "sweetalert2";
 class Feedback {
     constructor() {
-        this.feedbackId = uuidv4();
+        this.feedbackId = getID();
         this.score = 0;
         this.content = "";
         this.scoreActive = 10;
-        this.listFeedback = JSON.parse(localStorage.getItem("feedbacks") || "[]");
-        this.feedbackInput = document.querySelector("#feedbackInput");
-        this.error = document.querySelector(".error");
-        this.btnSend = document.querySelector(".btn-send");
-        this.reviewNumber = document.querySelector(".review-number");
-        this.averageRate = document.querySelector(".average-number");
-        this.inputContainer = document.querySelector(".input-container");
+        this.listFeedback = JSON.parse(localStorage.getItem("feedbacks") || "[]"); // Lấy các phản hồi từ localStorage
+        this.feedbackInput = document.querySelector("#feedbackInput"); // Input phản hồi
+        this.error = document.querySelector(".error"); // Hiển thị thông báo lỗi
+        this.btnSend = document.querySelector(".btn-send"); // Nút gửi phản hồi
+        this.reviewNumber = document.querySelector(".review-number"); // Số lượng phản hồi
+        this.averageRate = document.querySelector(".average-number"); // Điểm đánh giá trung bình
+        this.inputContainer = document.querySelector(".input-container"); // Phần container của input
         this.inputContainer.addEventListener("click", () => {
             this.feedbackInput.focus();
         });
@@ -25,15 +24,14 @@ class Feedback {
         this.handleSendButtonClick();
     }
     renderListButtonScore() {
-        let scroses = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let scores = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         let btnScoreGroup = document.querySelector(".btn-score-group");
-        let scoreHtmls = scroses.map((score) => {
+        let scoreHtmls = scores.map((score) => {
             return `
                 <button class="btn-score ${score === this.scoreActive ? "active" : ""}" data-score="${score}">${score}</button>
             `;
         });
-        let scroreHtml = scoreHtmls.join("");
-        btnScoreGroup.innerHTML = scroreHtml;
+        btnScoreGroup.innerHTML = scoreHtmls.join("");
     }
     handleScoreButtonClick() {
         const btnScoreGroup = document.querySelector(".btn-score-group");
@@ -50,6 +48,7 @@ class Feedback {
             }
         });
     }
+    // Render danh sách các phản hồi
     renderListFeedback() {
         let listFeedbackContent = document.querySelector(".list-feedback-content");
         let feedbackHtmls = this.listFeedback.map((feedback) => {
@@ -72,6 +71,7 @@ class Feedback {
         this.handleDeleteFeedback();
         this.handleUpdateFeedback();
     }
+    // Xử lý sự kiện khi click vào nút xóa phản hồi
     handleDeleteFeedback() {
         let listFeedbackContent = document.querySelector(".list-feedback-content");
         listFeedbackContent.addEventListener("click", (e) => {
@@ -107,6 +107,8 @@ class Feedback {
                     this.feedbackInput.value = updatingFeedback.content;
                     this.scoreActive = updatingFeedback.score;
                     this.renderListButtonScore();
+                    this.updatingFeedbackId = idUpdate;
+                    this.btnSend.textContent = "Lưu lại";
                 }
             }
         });
@@ -115,42 +117,44 @@ class Feedback {
         this.btnSend.addEventListener("click", (e) => {
             e.stopPropagation();
             let feedback = this.feedbackInput.value;
-            let updatingFeedback = null;
-            if (updatingFeedback) {
-                updatingFeedback.content = feedback;
-                updatingFeedback.score = this.scoreActive;
-                localStorage.setItem("feedbacks", JSON.stringify(this.listFeedback));
-                this.feedbackInput.value = "";
-                updatingFeedback = null;
-                this.feedbackInput.focus();
-                this.renderListFeedback();
-                this.handleAverageRating();
+            if (this.updatingFeedbackId) {
+                let updatingFeedback = this.listFeedback.find((fb) => fb.feedbackId === this.updatingFeedbackId);
+                if (updatingFeedback) {
+                    updatingFeedback.content = feedback;
+                    updatingFeedback.score = this.scoreActive;
+                    localStorage.setItem("feedbacks", JSON.stringify(this.listFeedback));
+                    this.feedbackInput.value = "";
+                    this.renderListFeedback();
+                    this.handleAverageRating();
+                    this.reviewNumber.innerHTML = this.listFeedback.length.toString();
+                    this.btnSend.textContent = "Gửi";
+                    this.updatingFeedbackId = "";
+                }
             }
             else {
                 let newFeedback = {
-                    feedbackId: uuidv4(),
+                    feedbackId: getID().toString(),
                     score: this.scoreActive,
                     content: feedback,
                 };
                 this.listFeedback.push(newFeedback);
                 localStorage.setItem("feedbacks", JSON.stringify(this.listFeedback));
+                this.feedbackInput.value = "";
                 this.renderListFeedback();
                 this.handleAverageRating();
-                this.feedbackInput.value = "";
+                this.reviewNumber.innerHTML = this.listFeedback.length.toString();
             }
-            this.reviewNumber.innerHTML = this.listFeedback.length.toString();
-            this.btnSend.classList.remove("btn-dark");
         });
     }
+    // Validate dữ liệu nhập vào
     validateData() {
-        let feedback = this.feedbackInput.value;
-        this.feedbackInput.addEventListener("input", (e) => {
-            if (!e.target.value.trim()) {
+        this.feedbackInput.addEventListener("input", () => {
+            const feedback = this.feedbackInput.value.trim();
+            if (feedback.length < 10) {
                 this.error.style.display = "block";
                 this.btnSend.classList.remove("btn-dark");
             }
             else {
-                feedback = e.target.value;
                 this.error.style.display = "none";
                 this.btnSend.classList.add("btn-dark");
             }
@@ -170,10 +174,6 @@ class Feedback {
     }
 }
 new Feedback();
-function uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
+function getID() {
+    return (Math.floor(100000 + Math.random() * 900000)).toString();
 }

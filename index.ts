@@ -1,16 +1,14 @@
-// import Swal from "sweetalert2";
-
 interface IFeedback {
-    feedbackId: string;
-    score: number
-    content: string
+    feedbackId: string; // Mã phản hồi
+    score: number; // Điểm đánh giá
+    content: string; // Nội dung phản hồi
 }
 
-
 class Feedback implements IFeedback {
-    feedbackId: string
-    score: number
-    content: string
+    feedbackId: string; 
+    score: number; 
+    content: string; 
+
     private scoreActive: number;
     private listFeedback: IFeedback[];
     private feedbackInput: HTMLInputElement;
@@ -19,20 +17,21 @@ class Feedback implements IFeedback {
     private reviewNumber: HTMLElement;
     private averageRate: HTMLElement;
     private inputContainer: HTMLElement;
+    private updatingFeedbackId: string; 
 
     constructor() {
-        this.feedbackId = uuidv4();
-        this.score = 0;
-        this.content = "";
+        this.feedbackId = getID(); 
+        this.score = 0; 
+        this.content = ""; 
 
-        this.scoreActive = 10;
-        this.listFeedback = JSON.parse(localStorage.getItem("feedbacks") || "[]");
-        this.feedbackInput = document.querySelector("#feedbackInput") as HTMLInputElement;
-        this.error = document.querySelector(".error") as HTMLElement;
-        this.btnSend = document.querySelector(".btn-send") as HTMLElement;
-        this.reviewNumber = document.querySelector(".review-number") as HTMLElement;
-        this.averageRate = document.querySelector(".average-number") as HTMLElement;
-        this.inputContainer = document.querySelector(".input-container") as HTMLElement;
+        this.scoreActive = 10; 
+        this.listFeedback = JSON.parse(localStorage.getItem("feedbacks") || "[]"); // Lấy các phản hồi từ localStorage
+        this.feedbackInput = document.querySelector("#feedbackInput") as HTMLInputElement; // Input phản hồi
+        this.error = document.querySelector(".error") as HTMLElement; // Hiển thị thông báo lỗi
+        this.btnSend = document.querySelector(".btn-send") as HTMLElement; // Nút gửi phản hồi
+        this.reviewNumber = document.querySelector(".review-number") as HTMLElement; // Số lượng phản hồi
+        this.averageRate = document.querySelector(".average-number") as HTMLElement; // Điểm đánh giá trung bình
+        this.inputContainer = document.querySelector(".input-container") as HTMLElement; // Phần container của input
 
         this.inputContainer.addEventListener("click", () => {
             this.feedbackInput.focus();
@@ -41,27 +40,29 @@ class Feedback implements IFeedback {
         this.feedbackInput.focus();
 
         this.renderListButtonScore();
+
         this.handleScoreButtonClick();
+
         this.renderListFeedback();
+
         this.validateData();
+
         this.handleAverageRating();
+
         this.handleSendButtonClick();
     }
 
-
     private renderListButtonScore(): void {
-        let scroses = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        let btnScoreGroup = document.querySelector(".btn-score-group") as HTMLElement;
+        let scores = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; 
+        let btnScoreGroup = document.querySelector(".btn-score-group") as HTMLElement; 
 
-        let scoreHtmls = scroses.map((score) => {
+        let scoreHtmls = scores.map((score) => {
             return `
                 <button class="btn-score ${score === this.scoreActive ? "active" : ""}" data-score="${score}">${score}</button>
             `;
         });
         
-        let scroreHtml = scoreHtmls.join("");
-
-        btnScoreGroup.innerHTML = scroreHtml;
+        btnScoreGroup.innerHTML = scoreHtmls.join("");
     }
 
     private handleScoreButtonClick(): void {
@@ -80,8 +81,8 @@ class Feedback implements IFeedback {
             }
         });
     }
-    
 
+    // Render danh sách các phản hồi
     private renderListFeedback(): void {
         let listFeedbackContent = document.querySelector(".list-feedback-content") as HTMLElement;
 
@@ -109,6 +110,7 @@ class Feedback implements IFeedback {
         this.handleUpdateFeedback(); 
     }
 
+    // Xử lý sự kiện khi click vào nút xóa phản hồi
     private handleDeleteFeedback(): void {
         let listFeedbackContent = document.querySelector(".list-feedback-content") as HTMLElement;
     
@@ -140,8 +142,6 @@ class Feedback implements IFeedback {
             }
         });
     }
-    
-    
 
     private handleUpdateFeedback(): void {
         let listFeedbackContent = document.querySelector(".list-feedback-content") as HTMLElement;
@@ -158,64 +158,64 @@ class Feedback implements IFeedback {
                     this.scoreActive = updatingFeedback.score;
 
                     this.renderListButtonScore();
+
+                    this.updatingFeedbackId = idUpdate;
+
+                    this.btnSend.textContent = "Lưu lại";
                 }
             }
         });
     }
-    
+
     private handleSendButtonClick(): void {
         this.btnSend.addEventListener("click", (e) => {
+            e.stopPropagation();
+            let feedback = this.feedbackInput.value;
 
-           
-                    e.stopPropagation();
-                    let feedback = this.feedbackInput.value; 
-            
-                    let updatingFeedback = null;
-                    if (updatingFeedback) {
-                        updatingFeedback.content = feedback;
-                        updatingFeedback.score = this.scoreActive;
-            
-                        localStorage.setItem("feedbacks", JSON.stringify(this.listFeedback));
-            
-                        this.feedbackInput.value = "";
-                        updatingFeedback = null;
-            
-                        this.feedbackInput.focus();
-            
-                        this.renderListFeedback();
-                        this.handleAverageRating();
-                    } else {
-                        let newFeedback = {
-                            feedbackId: uuidv4(),
-                            score: this.scoreActive,
-                            content: feedback,
-                        };
-            
-                        this.listFeedback.push(newFeedback);
-                        localStorage.setItem("feedbacks", JSON.stringify(this.listFeedback));
-            
-                        this.renderListFeedback();
-                        this.handleAverageRating();
-            
-                        this.feedbackInput.value = "";
-                    }
-            
+            if (this.updatingFeedbackId) {
+                let updatingFeedback = this.listFeedback.find(
+                    (fb) => fb.feedbackId === this.updatingFeedbackId
+                );
+
+                if (updatingFeedback) {
+                    updatingFeedback.content = feedback;
+                    updatingFeedback.score = this.scoreActive;
+    
+                    localStorage.setItem("feedbacks", JSON.stringify(this.listFeedback));
+    
+                    this.feedbackInput.value = "";
+                    this.renderListFeedback();
+                    this.handleAverageRating();
                     this.reviewNumber.innerHTML = this.listFeedback.length.toString();
-            
-                    this.btnSend.classList.remove("btn-dark");
-             
+                    this.btnSend.textContent = "Gửi";
+                    this.updatingFeedbackId = ""; 
+                }
+            } else { 
+                let newFeedback: IFeedback = {
+                    feedbackId: getID().toString(),
+                    score: this.scoreActive,
+                    content: feedback,
+                };
+                this.listFeedback.push(newFeedback);
+    
+                localStorage.setItem("feedbacks", JSON.stringify(this.listFeedback));
+    
+                this.feedbackInput.value = "";
+                this.renderListFeedback();
+                this.handleAverageRating();
+                this.reviewNumber.innerHTML = this.listFeedback.length.toString();
+            }
         });
     }
-    
-    
+
+    // Validate dữ liệu nhập vào
     private validateData(): void {
-        let feedback = this.feedbackInput.value;
-        this.feedbackInput.addEventListener("input", (e) => {
-            if (!(e.target as HTMLInputElement).value.trim()) {
+        this.feedbackInput.addEventListener("input", () => {
+            const feedback = this.feedbackInput.value.trim();
+            if (feedback.length < 10) {
                 this.error.style.display = "block";
                 this.btnSend.classList.remove("btn-dark");
             } else {
-                feedback = (e.target as HTMLInputElement).value;
                 this.error.style.display = "none";
                 this.btnSend.classList.add("btn-dark");
             }
@@ -236,11 +236,10 @@ class Feedback implements IFeedback {
     }
 }
 
+
 new Feedback();
-function uuidv4(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
+
+
+function getID(): string { 
+    return (Math.floor(100000 + Math.random() * 900000)).toString();
+}
